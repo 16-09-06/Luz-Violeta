@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luz Violeta</title>
+    <link rel="website icon" href="https://i.postimg.cc/HxJSTPj0/Gemini-Generated-Image-jo338ajo338ajo33.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Substitua SUA_CHAVE_DE_API pela sua chave real do Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_DE_API&libraries=places&callback=initService" async defer></script>
+
+    <style>
+        :root {
+            --roxo-primario: #7E57C2;
+            --roxo-escuro: #5E35B1;
+            --roxo-claro: #B39DDB;
+            --vermelho-emergencia: #E53935;
+            --branco: #ffffff;
+            --cinza-claro: #f5f5f5;
+            --cinza-escuro: #e0e0e0;
+            --texto: #333333;
+            --sombra: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--cinza-claro); color: var(--texto); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        header { background: linear-gradient(135deg, var(--roxo-primario), var(--roxo-escuro)); color: var(--branco); padding: 15px 0; box-shadow: var(--sombra); position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-btn { background: none; border: none; color: var(--branco); font-weight: 500; padding: 8px 15px; border-radius: 50px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .nav-btn:hover, .nav-btn.active { background-color: rgba(255, 255, 255, 0.2); }
+        #user-info { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--branco); }
+        .card { background-color: var(--branco); border-radius: 10px; padding: 20px; margin-bottom: 30px; box-shadow: var(--sombra); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--roxo-escuro); }
+        .form-control { width: 100%; padding: 12px 15px; border: 1px solid var(--cinza-escuro); border-radius: 8px; font-size: 16px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; border: none; gap: 8px; }
+        .btn-primary { background-color: var(--roxo-primario); color: var(--branco); }
+        .btn-secondary { background-color: var(--branco); color: var(--roxo-primario); border: 1px solid var(--roxo-primario); }
+        .btn-danger { background-color: var(--vermelho-emergencia); color: var(--branco); }
+        .btn-outline { background-color: transparent; color: var(--roxo-primario); border: 1px solid var(--roxo-primario); }
+        #login-section, #cadastro-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--roxo-primario), var(--roxo-escuro)); }
+        .login-card { background-color: var(--branco); border-radius: 12px; width: 100%; max-width: 450px; padding: 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); text-align: center; }
+        .divider { margin: 20px 0; position: relative; }
+        .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background-color: var(--cinza-escuro); z-index: 1; }
+        .divider span { background-color: var(--branco); position: relative; z-index: 2; padding: 0 15px; }
+        main { padding: 40px 0; }
+        .section-title { color: var(--roxo-primario); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .list-group-item { padding: 15px; border: 1px solid var(--cinza-escuro); border-radius: 8px; margin-bottom: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-container { height: 300px; margin-bottom: 30px; }
+        .post-header { display:flex; gap:10px; align-items:center; margin-bottom: 15px; }
+        .post-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: var(--roxo-claro); color: var(--branco); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .post-user { font-weight: 600; color: var(--roxo-primario); }
+        .post-date { font-size: 0.9rem; color: #666; }
+        .post-content { margin:10px 0; line-height: 1.6; }
+        @media (max-width: 1024px) { nav { gap: 5px; } .nav-btn { padding: 8px 10px; font-size: 0.9rem; } }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .header-content { flex-direction: column; gap: 15px; } }
+    </style>
+</head>
+<body>
+    <section id="login-section" style="display: none;">
+        <div class="login-card">
+            <div class="login-title"><i class="fas fa-heart"></i><h1>Luz Violeta</h1><p>Apoio a pessoas vitimas de violencia </p></div>
+            <div class="form-group"><input type="email" class="form-control" placeholder="E-mail"></div>
+            <div class="form-group"><input type="password" class="form-control" placeholder="Senha"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="showCadastro()"><i class="fas fa-user-plus"></i> Cadastrar</button>
+            </div>
+        </div>
+    </section>
+    <section id="cadastro-section" style="display: none;">
+        <div class="login-card">
+            <div class="login-title"><i class="fas fa-user-plus"></i><h1>Criar Conta</h1><p>Preencha seus dados para se cadastrar</p></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="Nome Completo" required></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="CPF" required></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="Telefone" required></div>
+            <div class="form-group"><input type="email" class="form-control" placeholder="E-mail" required></div>
+            <div class="form-group"><input type="password" class="form-control" placeholder="Senha" required></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="showLogin()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="cadastrar()"><i class="fas fa-check"></i> Cadastrar</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="app" style="display: none;">
+        <header>
+            <div class="container header-content">
+                <div class="logo"><i class="fas fa-heart"></i> Luz Violeta</div>
+                <nav>
+                    <button class="nav-btn" onclick="showSection('perfil')"><i class="fas fa-id-card"></i> Perfil</button>
+                    <button class="nav-btn" onclick="showSection('denuncia')"><i class="fas fa-bullhorn"></i> Denúncia</button>
+                    <button class="nav-btn" onclick="showSection('comunidade')"><i class="fas fa-users"></i> Comunidade</button>
+                    <button class="nav-btn" onclick="showSection('exames')"><i class="fas fa-clinic-medical"></i> Exames</button>
+                    <button class="nav-btn" onclick="showSection('estatisticas')"><i class="fas fa-chart-bar"></i> Estatísticas</button>
+                    <button class="nav-btn" onclick="showSection('recursos')"><i class="fas fa-book-open"></i> Recursos</button>
+                    <button class="nav-btn" onclick="showAdminSection()"><i class="fas fa-user-shield"></i> Admin</button>
+                </nav>
+                <div id="user-info" style="display: none;"><i class="fas fa-user-circle"></i><span id="user-name"></span></div>
+                    <button onclick="logout()" title="Sair" style="background:none; border:none; color:white; cursor:pointer; font-size: 1.2rem; margin-left: 10px;"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </header>
+
+            
+            </div>
+        </header>
+
+        <main class="container">
+            <section id="perfil-section" class="card" style="display:none;">
+                <h2 class="section-title"><i class="fas fa-id-card"></i> Perfil do Usuário</h2>
+                <div class="form-group"><label>Nome</label><input id="perfil-nome" class="form-control"></div>
+                <div class="form-group"><label>CPF</label><input id="perfil-cpf" class="form-control"></div>
+                <div class="form-group"><label>E-mail</label><input id="perfil-email" class="form-control"></div>
+                <div class="form-group"><label>Telefone</label><input id="perfil-telefone" class="form-control"></div>
+                <div class="form-group"><label>Atualizar Senha</label><input id="perfil-senha" type="password" class="form-control" placeholder="Deixe em branco para não alterar"></div>
+                <button class="btn btn-primary" onclick="salvarPerfil()" style="width:100%;"><i class="fas fa-save"></i> Salvar Alterações</button>
+                <div class="divider"><span>Histórico de Denúncias</span></div>
+                <div id="perfil-historico" class="list-group"></div>
+            </section>
+
+            <section id="denuncia-section" class="card" style="display:none;">
+                <h2 class="section-title"><i class="fas fa-bullhorn"></i> Fazer uma Denúncia</h2>
+                <form id="form-denuncia" onsubmit="enviarDenuncia(event)">
+                    <div class="form-group">
+                        <label>Tipo de Violência</label>
+                        <select class="form-control">
+                            <option>Violência Psicológica</option>
+                            <option>Violência Física</option>
+                            <option>Violência Sexual</option>
+                            <option>Violência Patrimonial</option>
+                            <option>Violência Moral</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Descrição</label><textarea class="form-control" rows="5" placeholder="Descreva o que aconteceu..."></textarea></div>
+                    <div class="form-group">
+                        <label>Localização</label>
+                        <iframe id="mapa-denuncia" src="https://maps.google.com/maps?q=-14.235004,-51.92528&hl=pt-BR&z=4&output=embed" width="100%" height="300" style="border:0; border-radius: 8px; margin-bottom: 10px;" allowfullscreen="" loading="lazy"></iframe>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 10px;" onclick="obterLocalizacao()">
+                            <i class="fas fa-map-marker-alt"></i> Usar minha localização
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label>Anexar Imagem (Opcional)</label>
+                        <input id="denuncia-anexo" type="file" class="form-control" accept="image/*">
+                        <small>Anexe uma foto ou captura de tela como evidência.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-paper-plane"></i> Enviar Denúncia</button>
+                </form>
+            </section>
+
+            <section id="comunidade-section" class="card" style="display: none;">
+                <h2 class="section-title"><i class="fas fa-users"></i> Comunidade de Apoio</h2>
+                <div class="form-group">
+                    <label for="nova-postagem-texto">Crie uma nova postagem</label>
+                    <textarea id="nova-postagem-texto" class="form-control" rows="3" placeholder="Escreva sua mensagem de apoio ou desabafo..."></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; font-size: 0.9rem;">
+                            <input type="checkbox" id="anonimo-post"> Postar como anônimo
+                        </label>
+                        <button type="button" class="btn btn-primary" onclick="criarPostagem()">Postar</button>
+                    </div>
+                </div>
+                <div class="divider"><span>Postagens Recentes</span></div>
+                <div id="feed-posts" class="list-group"></div>
+            </section>
+            
+            <section id="exames-section" class="card" style="display: none;">
+                <h2 class="section-title"><i class="fas fa-clinic-medical"></i> Locais para Exames Preventivos</h2>
+                <p style="margin-bottom: 20px;">Sua saúde é a prioridade. Encontre locais próximos para realizar exames de forma segura e sigilosa.</p>
+                <button type="button" class="btn btn-primary" style="width: 100%;" onclick="buscarClinicas()">
+                    <i class="fas fa-map-marker-alt"></i> Usar minha localização para buscar
+                </button>
+                <div class="divider"><span>Locais Encontrados</span></div>
+                <div id="clinicas-lista" class="list-group"></div>
+            </section>
+
+            <section id="estatisticas-section" class="card" style="display: none;">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> Estatísticas de Violência (Baseado nas denúncias)</h2>
+                <div class="chart-container"><canvas id="tiposViolenciaChart"></canvas></div>
+                <div class="chart-container"><canvas id="denunciasMesChart"></canvas></div>
+            </section>
+
+            <section id="recursos-section" class="card" style="display: none;">
+                <h2 class="section-title"><i class="fas fa-book-open"></i> Recursos e Ajuda</h2>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Ligue 180:</strong> Central de Atendimento à Mulher</li>
+                    <li class="list-group-item"><strong>Ligue 100:</strong> Direitos Humanos</li>
+                    <li class="list-group-item"><strong>Ligue 190:</strong> Polícia Militar (Emergência Imediata)</li>
+                </ul>
+            </section>
+            
+            <section id="admin-section" class="card" style="display:none;">
+                <h2 class="section-title"><i class="fas fa-user-shield"></i> Dashboard Administrativo</h2>
+                <div class="form-row">
+                    <div class="card"><h3 style="margin-top:0;">Total de Denúncias</h3><div id="admin-total-denuncias" style="font-size:2rem; font-weight:700;">0</div></div>
+                    <div class="card"><h3 style="margin-top:0;">Usuárias Registradas</h3><div id="admin-total-usuarios" style="font-size:2rem; font-weight:700;">0</div></div>
+                    <div class="card"><h3 style="margin-top:0;">Postagens</h3><div id="admin-total-posts" style="font-size:2rem; font-weight:700;">0</div></div>
+                </div>
+                <div class="divider"><span>Moderar Postagens da Comunidade</span></div>
+                <div id="admin-posts" class="list-group"></div>
+            </section>
+        </main>
+    </div>
+
+    <div style="position:fixed; right:20px; bottom:20px; z-index:9999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+        <button id="quick-exit-btn" title="Saída Rápida" class="btn btn-danger" onclick="quickExit()">
+            <i class="fas fa-door-open"></i> Saída Rápida
+        </button>
+        <button id="panic-btn" title="Botão de Pânico (Alt+X)" class="btn btn-danger">
+            <i class="fas fa-exclamation-triangle"></i> Pânico
+        </button>
+    </div>
+
+    <script>
+        (function(){
+            const LS_KEYS = { USERS: 'lv_users', USER: 'lv_user', POSTS: 'lv_posts', DENUNCIAS: 'lv_denuncias' };
+            const $ = (sel) => document.querySelector(sel);
+            function load(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (e) { return fallback; } }
+            function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+            
+            let placesService; // Variável global para o serviço de busca do Google
+            let tiposViolenciaChart, denunciasMesChart; // Variáveis para os gráficos
+
+            // --- INICIALIZAÇÃO ---
+            window.initService = function() {
+                const map = new google.maps.Map(document.createElement('div'));
+                placesService = new google.maps.places.PlacesService(map);
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const loggedInUser = load(LS_KEYS.USER, null);
+                if(loggedInUser) {
+                    showApp(loggedInUser);
+                } else {
+                    $('#login-section').style.display = 'flex';
+                }
+                const panicBtn = $('#panic-btn');
+                if (panicBtn) {
+                    panicBtn.addEventListener('click', acionarPanico);
+                    document.addEventListener('keydown', (e) => {
+                        if (e.altKey && (e.key === 'x' || e.key === 'X')) acionarPanico();
+                    });
+                }
+            });
+
+            // --- FUNÇÕES PRINCIPAIS ---
+            function showApp(user) {
+                $('#user-name').textContent = user.nome;
+                $('#user-info').style.display = 'flex';
+                $('#login-section').style.display = 'none';
+                $('#cadastro-section').style.display = 'none';
+                $('#app').style.display = 'block';
+                showSection('denuncia');
+                renderAll();
+            }
+
+            function renderAll() {
+                renderPerfil();
+                renderFeed();
+                renderAdmin();
+                initCharts();
+            }
+
+            // --- LOGIN E CADASTRO ---
+            window.login = function() {
+                const email = $('#login-section input[placeholder="E-mail"]').value.trim().toLowerCase();
+                const senha = $('#login-section input[placeholder="Senha"]').value;
+                if (!email || !senha) return alert("Preencha e-mail e senha.");
+                const usuarios = load(LS_KEYS.USERS, []);
+                const userFound = usuarios.find(u => u.email === email && u.senha === senha);
+                if (userFound) {
+                    save(LS_KEYS.USER, userFound);
+                    showApp(userFound);
+                } else {
+                    alert("E-mail ou senha incorretos.");
+                }
+            }
+            window.cadastrar = function() {
+                const form = $('#cadastro-section');
+                const nome = form.querySelector('input[placeholder="Nome Completo"]').value.trim();
+                const cpf = form.querySelector('input[placeholder="CPF"]').value.trim();
+                const email = form.querySelector('input[placeholder="E-mail"]').value.trim().toLowerCase();
+                const senha = form.querySelector('input[placeholder="Senha"]').value;
+                const telefone = form.querySelector('input[placeholder="Telefone"]').value.trim();
+                if (!nome || !email || !senha || !cpf || !telefone) return alert("Preencha todos os campos obrigatórios.");
+                const usuarios = load(LS_KEYS.USERS, []);
+                if (usuarios.some(user => user.email === email)) return alert("Este e-mail já está cadastrado.");
+                if (usuarios.some(user => user.cpf === cpf)) return alert("Este CPF já está cadastrado.");
+
+                usuarios.push({ nome, email, cpf, senha, telefone });
+                save(LS_KEYS.USERS, usuarios);
+                alert("Cadastro realizado com sucesso!");
+                showLogin();
+            }
+            window.showLogin = () => { $('#cadastro-section').style.display = 'none'; $('#login-section').style.display = 'flex'; }
+            window.showCadastro = () => { $('#login-section').style.display = 'none'; $('#cadastro-section').style.display = 'flex'; }
+            window.logout = function() {
+                localStorage.removeItem(LS_KEYS.USER); // Limpa a sessão do usuário
+                location.reload(); // Recarrega a página para voltar à tela de login
+            }
+            
+            // --- NAVEGAÇÃO ---
+            window.showSection = function(sectionId) {
+                const sections = ['perfil', 'denuncia', 'comunidade', 'exames', 'estatisticas', 'recursos', 'admin'];
+                sections.forEach(id => {
+                    const section = $(`#${id}-section`);
+                    if (section) section.style.display = (id === sectionId) ? 'block' : 'none';
+                });
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                const activeButton = $(`[onclick="showSection('${sectionId}')"]`);
+                if (activeButton) activeButton.classList.add('active');
+            }
+
+            window.showAdminSection = function() {
+                const adminPassword = prompt("Para acessar a área administrativa, por favor, insira a senha de administrador:");
+                
+                // A senha está 'hardcoded' (fixa no código) aqui para fins de demonstração.
+                // Em uma aplicação real, a verificação de senhas deve ser feita de forma segura no servidor.
+                if (adminPassword === "teste") {
+                    showSection('admin');
+                } else if (adminPassword !== null) { // Impede o alerta se o usuário clicar em "Cancelar"
+                    alert("Senha incorreta. Acesso negado.");
+                }
+            }
+
+            // --- PERFIL E DENÚNCIA ---
+            window.salvarPerfil = function() {
+                const currentUser = load(LS_KEYS.USER, {});
+                const newPassword = $('#perfil-senha').value;
+                const updatedUser = { ...currentUser, 
+                    nome: $('#perfil-nome').value.trim(), 
+                    cpf: $('#perfil-cpf').value.trim(),
+                    email: $('#perfil-email').value.trim().toLowerCase(),
+                    telefone: $('#perfil-telefone').value.trim(),
+                    senha: newPassword ? newPassword : currentUser.senha
+                };
+                
+                const users = load(LS_KEYS.USERS, []);
+                const userIndex = users.findIndex(u => u.email === currentUser.email);
+                if (userIndex !== -1) {
+                    if (currentUser.email !== updatedUser.email && users.some((u, i) => u.email === updatedUser.email && i !== userIndex)) {
+                        $('#perfil-email').value = currentUser.email;
+                        return alert('Este novo e-mail já está em uso.');
+                    }
+                    if (currentUser.cpf !== updatedUser.cpf && users.some((u, i) => u.cpf === updatedUser.cpf && i !== userIndex)) {
+                        $('#perfil-cpf').value = currentUser.cpf;
+                        return alert('Este novo CPF já está em uso.');
+                    }
+                    users[userIndex] = updatedUser;
+                    save(LS_KEYS.USERS, users);
+                }
+                save(LS_KEYS.USER, updatedUser);
+                alert('Perfil salvo!');
+                renderAll();
+                $('#user-name').textContent = updatedUser.nome;
+            }
+            function renderPerfil() {
+                const user = load(LS_KEYS.USER, {});
+                $('#perfil-nome').value = user.nome || '';
+                $('#perfil-cpf').value = user.cpf || '';
+                $('#perfil-email').value = user.email || '';
+                $('#perfil-telefone').value = user.telefone || '';
+                $('#perfil-senha').value = '';
+                
+                const hist = load(LS_KEYS.DENUNCIAS, []);
+                const box = $('#perfil-historico');
+                box.innerHTML = hist.length ? '' : '<div class="list-group-item">Sem denúncias registradas.</div>';
+                hist.slice().reverse().forEach(d => {
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item';
+                    div.innerHTML = `<strong>Protocolo:</strong> ${d.protocolo}<br><strong>Data:</strong> ${new Date(d.data).toLocaleString()}<br><strong>Tipo:</strong> ${d.tipo}`;
+                    box.appendChild(div);
+                });
+            }
+            window.enviarDenuncia = function(event) {
+                event.preventDefault();
+                const form = $('#form-denuncia');
+                const tipo = form.querySelector('select').value;
+                const descricao = form.querySelector('textarea').value.trim();
+                const anexoInput = $('#denuncia-anexo');
+                const anexoFile = anexoInput.files[0];
+
+                if(!descricao) return alert('Por favor, descreva a denúncia.');
+
+                const processDenuncia = (anexoUrl = null) => {
+                    const denuncias = load(LS_KEYS.DENUNCIAS, []);
+                    const protocolo = 'LV-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+                    denuncias.push({ protocolo, data: Date.now(), tipo, descricao, anexo: anexoUrl });
+                    save(LS_KEYS.DENUNCIAS, denuncias);
+                    alert('Denúncia enviada com sucesso! Protocolo: ' + protocolo);
+                    form.reset();
+                    renderAll();
+                };
+
+                if (anexoFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        processDenuncia(e.target.result); // Salva a imagem como Data URL
+                    };
+                    reader.readAsDataURL(anexoFile);
+                } else {
+                    processDenuncia(); // Envia a denúncia sem anexo
+                }
+            }
+            window.obterLocalizacao = function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude: lat, longitude: lon } = position.coords;
+                            // Atualiza o mapa para a localização atual com um marcador (q=) e zoom (z=17)
+                            $('#mapa-denuncia').src = `https://maps.google.com/maps?q=${lat},${lon}&hl=pt-BR&z=17&t=m&output=embed`;
+                        },
+                        () => { alert("Não foi possível obter a localização."); locationInput.value = ""; }
+                    );
+                } else { alert("Geolocalização não é suportada."); }
+            }
+            
+            // --- COMUNIDADE ---
+            function renderFeed() {
+                const wrap = $('#feed-posts');
+                if (!wrap) return;
+                const currentUser = load(LS_KEYS.USER, {});
+                const posts = load(LS_KEYS.POSTS, []).slice().reverse();
+                wrap.innerHTML = posts.length ? '' : '<div class="list-group-item">Ainda não há postagens.</div>';
+                posts.forEach(p => {
+                    // Para compatibilidade com postagens antigas que não possuem a propriedade likedBy
+                    if (!p.likedBy) p.likedBy = [];
+
+                    const userHasLiked = p.likedBy.includes(currentUser.email);
+                    const likeButtonClass = userHasLiked ? 'btn btn-primary' : 'btn btn-outline';
+                    const likeButtonText = userHasLiked ? 'Apoiado' : 'Apoiar';
+
+                    // Verifica se o usuário logado é o dono do post para mostrar os botões de ação
+                    const isOwner = p.userEmail === currentUser.email;
+                    const ownerActionsHTML = isOwner 
+                        ? `<div style="margin-left: auto; display: flex; gap: 10px;">
+                               <button class="btn btn-outline" onclick="showEditView(${p.id})"><i class="fas fa-edit"></i> Editar</button>
+                               <button class="btn btn-secondary" onclick="deleteMyPost(${p.id})"><i class="fas fa-trash"></i> Apagar</button>
+                           </div>` 
+                        : '';
+
+                    const el = document.createElement('div');
+                    el.className = 'list-group-item'; el.id = `post-item-${p.id}`;
+                    el.innerHTML = ` 
+                        <div class="post-header">
+                            <div class="post-avatar">${p.user[0]}</div>
+                            <div><div class="post-user">${p.user}</div><div class="post-date">${new Date(p.when).toLocaleString()}</div></div>
+                        </div>
+                        <div class="post-content">${p.content}</div>
+                        <div style="display:flex; gap:15px; align-items:center; margin-top: 15px;">
+                           <button class="${likeButtonClass}" onclick="likePost(${p.id})"><i class="fas fa-heart"></i> ${likeButtonText} (${p.likes})</button>
+                           <button class="btn btn-outline" onclick="toggleComments(${p.id})"><i class="fas fa-comment"></i> Comentários (${p.comments.length})</button>
+                           ${ownerActionsHTML}
+                        </div>
+                        <div id="comments-${p.id}" style="display:none; margin-top:15px; padding-top: 15px; border-top: 1px solid var(--cinza-escuro);">
+                           <div id="comments-list-${p.id}"></div>
+                           <div style="margin-top:10px;">
+                               <div style="display:flex; gap:10px;">
+                                   <input id="comment-input-${p.id}" class="form-control" placeholder="Escreva um comentário..." />
+                                   <button class="btn btn-primary" onclick="addComment(${p.id})">Enviar</button>
+                               </div>
+                               <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+                                   <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; font-size: 0.9rem;">
+                                       <input type="checkbox" id="anonimo-comment-${p.id}"> Postar como anônimo
+                                   </label>
+                               </div>
+                           </div>
+                        </div>`;
+                    wrap.appendChild(el);
+                    renderComments(p.id);
+                });
+            }
+            window.criarPostagem = function() {
+                const txt = $('#nova-postagem-texto');
+                const currentUser = load(LS_KEYS.USER, null);
+                const isAnonimo = $('#anonimo-post').checked;
+                if (!txt.value.trim()) return alert('Escreva algo para postar.');
+                if (!currentUser) return; // Checagem de segurança
+
+                const posts = load(LS_KEYS.POSTS, []);
+                posts.push({ id: Date.now(), user: isAnonimo ? 'Anônimo' : currentUser.nome, userEmail: currentUser.email, anonimo: isAnonimo, content: txt.value.trim(), when: Date.now(), likes: 0, likedBy: [], comments: [] });
+                save(LS_KEYS.POSTS, posts);
+                txt.value = '';
+                $('#anonimo-post').checked = false;
+                renderAll();
+            }
+            window.likePost = function(id) {
+                const currentUser = load(LS_KEYS.USER, null);
+                if (!currentUser) return; // Checagem de segurança
+
+                const posts = load(LS_KEYS.POSTS, []);
+                const post = posts.find(p => p.id === id);
+                if (post) {
+                    if (!post.likedBy) post.likedBy = []; // Garante compatibilidade com posts antigos
+                    
+                    const userEmail = currentUser.email;
+                    const userLikeIndex = post.likedBy.indexOf(userEmail);
+
+                    if (userLikeIndex > -1) { // Se o usuário já curtiu, remove o like (descurtir)
+                        post.likedBy.splice(userLikeIndex, 1);
+                    } else { // Se não curtiu, adiciona o like
+                        post.likedBy.push(userEmail);
+                    }
+                    post.likes = post.likedBy.length; // Atualiza a contagem de likes
+                    save(LS_KEYS.POSTS, posts);
+                    renderFeed(); // Re-renderiza o feed para mostrar a alteração
+                }
+            }
+            window.showEditView = function(id) {
+                const posts = load(LS_KEYS.POSTS, []);
+                const post = posts.find(p => p.id === id);
+                if (!post) return;
+
+                const postItem = $(`#post-item-${id}`);
+                if (!postItem) return;
+
+                // Sanitiza o conteúdo para evitar problemas de HTML dentro do textarea
+                const sanitizedContent = post.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+                postItem.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-avatar">${post.user[0]}</div>
+                        <div><div class="post-user">${post.user}</div><div class="post-date">${new Date(post.when).toLocaleString()}</div></div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="edit-area-${id}" class="form-control" rows="4">${sanitizedContent}</textarea>
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button class="btn btn-secondary" onclick="renderFeed()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="saveEdit(${id})">Salvar</button>
+                    </div>
+                `;
+            }
+            window.saveEdit = function(id) {
+                const newContent = $(`#edit-area-${id}`).value.trim();
+                if (!newContent) return alert('A postagem não pode ficar vazia.');
+                const posts = load(LS_KEYS.POSTS, []);
+                const post = posts.find(p => p.id === id);
+                if (post) { post.content = newContent; save(LS_KEYS.POSTS, posts); }
+                renderFeed();
+            }
+            window.deleteMyPost = function(id) {
+                if (!confirm('Tem certeza que deseja apagar esta postagem? Esta ação não pode ser desfeita.')) {
+                    return;
+                }
+                const currentUser = load(LS_KEYS.USER, null);
+                if (!currentUser) return; // Checagem de segurança
+
+                let posts = load(LS_KEYS.POSTS, []);
+                const postToDelete = posts.find(p => p.id === id);
+
+                // Apenas o dono do post pode apagar
+                if (postToDelete && postToDelete.userEmail === currentUser.email) {
+                    posts = posts.filter(p => p.id !== id);
+                    save(LS_KEYS.POSTS, posts);
+                    renderAll(); // Atualiza o feed e as estatísticas do admin
+                }
+            }
+            window.toggleComments = function(id) { $(`#comments-${id}`).style.display = $(`#comments-${id}`).style.display === 'none' ? 'block' : 'none'; }
+            function renderComments(id) {
+                const post = load(LS_KEYS.POSTS, []).find(p => p.id === id);
+                const list = $(`#comments-list-${id}`);
+                if (!post || !list) return; // Adicionado !list
+                list.innerHTML = '';
+                post.comments.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item';
+                    const userName = c.anonimo ? 'Anônimo' : c.user;
+                    div.innerHTML = `<strong>${userName}:</strong> ${c.text}`;
+                    list.appendChild(div);
+                });
+            }
+            window.addComment = function(id) {
+                const input = $(`#comment-input-${id}`);
+                const isAnonimo = $(`#anonimo-comment-${id}`).checked;
+                const currentUser = load(LS_KEYS.USER, null);
+                if (!input.value.trim() || !currentUser) return;
+
+                const posts = load(LS_KEYS.POSTS, []);
+                const post = posts.find(p => p.id === id);
+                if (post) {
+                    post.comments.push({ user: currentUser.nome, text: input.value.trim(), anonimo: isAnonimo });
+                    save(LS_KEYS.POSTS, posts);
+                    input.value = '';
+                    renderFeed();
+                }
+            }
+
+            // --- EXAMES ---
+            window.buscarClinicas = function() {
+                const lista = $('#clinicas-lista');
+                lista.innerHTML = '<p>Buscando clínicas próximas...</p>';
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                            if (!placesService) { return lista.innerHTML = '<p>Erro: Serviço de mapas não iniciado. Verifique sua chave de API.</p>'; }
+                            
+                            const request = { location: userLocation, radius: '5000', keyword: 'clínica da mulher OR hospital' };
+                            placesService.nearbySearch(request, (results, status) => {
+                                if (status === google.maps.places.PlacesServiceStatus.OK && results.length) {
+                                    lista.innerHTML = '';
+                                    results.forEach(place => {
+                                        const div = document.createElement('div');
+                                        div.className = 'list-group-item';
+                                        div.innerHTML = `<strong>${place.name}</strong><br><small>${place.vicinity}</small>`;
+                                        lista.appendChild(div);
+                                    });
+                                } else {
+                                    lista.innerHTML = '<p>Nenhum local encontrado em um raio de 5km.</p>';
+                                }
+                            });
+                        },
+                        () => { lista.innerHTML = '<p>Não foi possível obter sua localização. Por favor, permita o acesso no seu navegador.</p>'; }
+                    );
+                } else { lista.innerHTML = '<p>Geolocalização não é suportada por este navegador.</p>'; }
+            }
+            
+            // --- GRÁFICOS E ADMIN ---
+            function initCharts() {
+                const denuncias = load(LS_KEYS.DENUNCIAS, []);
+                const tipos = denuncias.reduce((acc, d) => {
+                    acc[d.tipo] = (acc[d.tipo] || 0) + 1;
+                    return acc;
+                }, {});
+
+                if (tiposViolenciaChart) tiposViolenciaChart.destroy();
+                if ($('#tiposViolenciaChart')) {
+                    tiposViolenciaChart = new Chart($('#tiposViolenciaChart'), { type: 'doughnut', data: { labels: Object.keys(tipos), datasets: [{ data: Object.values(tipos), backgroundColor: ['#B39DDB', '#9575CD', '#7E57C2', '#673AB7', '#5E35B1'] }] }, options: { responsive: true } });
+                }
+
+                if (denunciasMesChart) denunciasMesChart.destroy();
+                if ($('#denunciasMesChart')) {
+                    denunciasMesChart = new Chart($('#denunciasMesChart'), { type: 'line', data: { labels: ['Janeiro', 'Fevereiro', 'Março'], datasets: [{ label: 'Denúncias por Mês', data: [15, 25, 40], borderColor: '#7E57C2' }] }, options: { responsive: true } });
+                }
+            }
+            function renderAdmin() {
+                if($('#admin-total-denuncias')) $('#admin-total-denuncias').textContent = load(LS_KEYS.DENUNCIAS, []).length;
+                if($('#admin-total-usuarios')) $('#admin-total-usuarios').textContent = load(LS_KEYS.USERS, []).length;
+                
+                const posts = load(LS_KEYS.POSTS, []);
+                if($('#admin-total-posts')) $('#admin-total-posts').textContent = posts.length;
+                
+                const box = $('#admin-posts');
+                if(box){
+                    box.innerHTML = posts.length ? '' : '<div class="list-group-item">Sem postagens para moderar.</div>';
+                    posts.slice().reverse().forEach(post => {
+                        const item = document.createElement('div');
+                        item.className = 'list-group-item';
+                        item.innerHTML = `<strong>${post.user}</strong> — ${new Date(post.when).toLocaleString()}<br>${post.content}<br>
+                                          <button class='btn btn-secondary' onclick='removePost(${post.id})'>Remover</button>`;
+                        box.appendChild(item);
+                    });
+                }
+            }
+            window.removePost = function(id) {
+                let posts = load(LS_KEYS.POSTS, []);
+                posts = posts.filter(p => p.id !== id);
+                save(LS_KEYS.POSTS, posts);
+                renderAll();
+            }
+
+            // --- SEGURANÇA ---
+            window.quickExit = () => { window.location.replace('https://www.google.com.br'); }
+            function acionarPanico() { alert('A polícia já está a caminho. Uma viatura foi enviada para a sua localização atual.'); }
+        })();
+    </script>
+</body>
+</html>
